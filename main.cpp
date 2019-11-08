@@ -1,48 +1,44 @@
 #include <iostream>
 #include <vector>
+#include <list>
 #include "support_functions.h"
 
-std::vector<std::pair<int, int>> decimation(std::vector<std::pair<int, int>>& data, int N) {
+void decimate (std::list<std::pair<int, int>> & data, int N) {
 
     if (N <= 2 || data.size() == 0) {
-        return std::vector<std::pair<int, int>>();
+        return;
     }
 
-    std::vector<std::pair<int, int>> res;
+    size_t size = data.size();
+    int count = 1;
+    auto it = data.begin();
+    auto it_end = data.end();
 
-    for (size_t i = 0; i < data.size(); ) {
+    while (it != it_end) {
 
-        // Вычисляется длина подпоследоватльности
-        size_t len = find_seq_len(data, i, data.size() - 1);
+        if (count == 1 || count % N == 0 || !compare_pairs(*it, *std::next(it)) ) {
 
-        // Добавляется первый элемент подпоследоватльности
-        res.push_back(data[i]);
-
-        // Добавляется каждый N-й элементподпоследоватльности
-        for (size_t j = 1; j < len; j++) {
-            if (j % N == 0) {
-                res.push_back(data[i + j - 1]);
+            if (!compare_pairs(*it, *std::next(it))) {
+                count = 1;
+            } else {
+                count++;
             }
+            it++;
         }
-
-        // Если последний элемент подпоследоватльности не попал в результат
-        // (последний не является первым или не является N-м),
-        // то добавить его
-        if (is_present(res, data[i + len - 1]) == false) {
-            res.push_back(data[i + len - 1]);
+        else {
+            it++;
+            data.erase(std::prev(it));
+            it_end = data.end();
+            count++;
         }
-
-        // Пропуск обработанной подпоследоватльности
-        i+=len;
     }
 
-    return res;
 }
 
 
 int main()
 {
-    std::vector<std::pair<int, int>> data;
+    std::list<std::pair<int, int>> data;
     data.push_back({ 1, 10 });
     data.push_back({ 2, 11 });
     data.push_back({ 3, 11 });
@@ -57,17 +53,12 @@ int main()
     data.push_back({ 12, 11 });
     data.push_back({ 13, 11 });
     data.push_back({ 14, 10 });
+    std::list<std::pair<int, int>> data2(data);
 
-    auto result3 = decimation(data, 3);
-    auto result4 = decimation(data, 4);
-
-    print_vec_pair(data);
-    std::cout << std::endl;
-
-    print_vec_pair(result3);
-    std::cout << std::endl;
-
-    print_vec_pair(result4);
-    std::cout << std::endl;
+    print_list_pair(data);
+    decimate(data, 3);
+    print_list_pair(data);
+    decimate(data2, 4);
+    print_list_pair(data2);
 
 }
